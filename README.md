@@ -71,19 +71,7 @@ cics-tools-suite/
 └── README.md
 ```
 
-## Despliegue
 
-### Netlify
-El proyecto está listo para Netlify Drop o conexión con este repositorio.  
-No requiere build steps — es HTML/CSS/JS estático puro.
-
-### Localmente
-```bash
-# Cualquiera de estas opciones:
-open index.html
-python -m http.server 8080
-npx serve .
-```
 
 ## Tecnologías
 
