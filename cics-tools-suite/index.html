@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CICS Tools Suite</title>
+<link rel="icon" id="favicon" type="image/svg+xml">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- ══ CONFIRM MODAL ══ -->
+<div id="confirm-overlay">
+  <div id="confirm-box">
+    <div class="confirm-header warn-header">
+      <svg class="icon"><use href="#icon-warning"></use></svg>
+      <span id="confirm-title">CAMPOS OBLIGATORIOS VACÍOS</span>
+    </div>
+    <div class="confirm-body">
+      <div id="confirm-message"></div>
+      <div class="confirm-fields-list" id="confirm-fields-list"></div>
+      <div id="confirm-question" style="color:var(--text);font-weight:600;margin-top:10px"></div>
+    </div>
+    <div class="confirm-footer">
+      <button class="btn btn-secondary" id="confirm-cancel-btn" onclick="closeConfirm(false)">
+        <svg class="icon"><use href="#icon-back"></use></svg> CANCELAR
+      </button>
+      <button class="btn btn-orange" id="confirm-ok-btn" onclick="closeConfirm(true)">
+        <svg class="icon"><use href="#icon-trace"></use></svg> GENERAR DE TODAS FORMAS
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SVG ICON SPRITE
+════════════════════════════════════════════ -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="icon-logo" viewBox="0 0 24 24">
+    <path d="M3 3v18" stroke="currentColor" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+    <path d="M3 3h18" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    <path d="M3 21h18" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    <path d="M3 8.5h18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M9 8.5v12.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-logo-val" viewBox="0 0 24 24">
+    <path d="M5 12l4 4 10-10" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-layout" viewBox="0 0 24 24">
+    <rect x="2" y="2" width="20" height="20" rx="2.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M2 8.5h20" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M8.5 8.5v13.5" stroke="currentColor" stroke-width="1.5"/>
+  </symbol>
+  <symbol id="icon-form" viewBox="0 0 24 24">
+    <rect x="3" y="2" width="18" height="20" rx="2.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M7.5 8h9M7.5 12h9M7.5 16h5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-trace" viewBox="0 0 24 24">
+    <path d="M2 12h3l2.5-7 4.5 14 3.5-7H22" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-search" viewBox="0 0 24 24">
+    <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M20 20l-4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-result" viewBox="0 0 24 24">
+    <rect x="3" y="2" width="18" height="20" rx="2.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M7 8h6M7 12h8M7 16h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="17" cy="16" r="3" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M16 16l.8.8 1.5-1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-folder" viewBox="0 0 24 24">
+    <path d="M2 7.5A2.5 2.5 0 0 1 4.5 5h4.086a1 1 0 0 1 .707.293L10.707 6.7A1 1 0 0 0 11.414 7H19.5A2.5 2.5 0 0 1 22 9.5v9a2.5 2.5 0 0 1-2.5 2.5h-15A2.5 2.5 0 0 1 2 18.5V7.5z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+  </symbol>
+  <symbol id="icon-copy" viewBox="0 0 24 24">
+    <rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-ejemplo-clipboard" viewBox="0 0 24 24">
+    <path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <rect x="8" y="2" width="8" height="4" rx="1" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M9 15l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-download" viewBox="0 0 24 24">
+    <path d="M12 3v13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M7 11.5l5 5.5 5-5.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M3 20h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-upload" viewBox="0 0 24 24">
+    <path d="M12 16V3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M7 7.5l5-5.5 5 5.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M3 20h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-clear" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M8.5 8.5L15.5 15.5M15.5 8.5L8.5 15.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-add" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M12 8.5v7M8.5 12h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-remove" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M8.5 12h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-back" viewBox="0 0 24 24">
+    <path d="M20 12H4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M10 6l-6 6 6 6" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-lock" viewBox="0 0 24 24">
+    <rect x="5" y="11" width="14" height="10" rx="2.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M8 11V7.5a4 4 0 0 1 8 0V11" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <circle cx="12" cy="16.5" r="1.5" fill="currentColor" stroke="none"/>
+  </symbol>
+  <symbol id="icon-info" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M12 11v5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="12" cy="7.5" r="1.2" fill="currentColor" stroke="none"/>
+  </symbol>
+  <symbol id="icon-warning" viewBox="0 0 24 24">
+    <path d="M12 2.5L2 21h20L12 2.5z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/>
+    <path d="M12 9.5v5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="12" cy="18.5" r="1.1" fill="currentColor" stroke="none"/>
+  </symbol>
+  <symbol id="icon-success" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M8 12.5l3 3 5.5-6.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-error" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M12 7v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="12" cy="16.5" r="1.2" fill="currentColor" stroke="none"/>
+  </symbol>
+  <symbol id="icon-extract" viewBox="0 0 24 24">
+    <rect x="2" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M7 17v4M7 21h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M18 8V3l4 4-4 1z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/>
+    <path d="M6 8h6M6 11h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-manual" viewBox="0 0 24 24">
+    <rect x="3" y="8" width="18" height="10" rx="1.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M7 11h2M11 11h2M15 11h2M7 15h2M11 15h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-book" viewBox="0 0 24 24">
+    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M8 7h8M8 11h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-user" viewBox="0 0 24 24">
+    <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-tag" viewBox="0 0 24 24">
+    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <circle cx="7" cy="7" r="1.5" fill="currentColor" stroke="none"/>
+  </symbol>
+  <symbol id="icon-home" viewBox="0 0 24 24">
+    <path d="M3 12L12 3l9 9" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M5 10v10a1 1 0 0 0 1 1h4v-5h4v5h4a1 1 0 0 0 1-1V10" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-arrow" viewBox="0 0 24 24">
+    <path d="M5 12h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-gen" viewBox="0 0 24 24">
+    <path d="M2 12h3l2.5-7 4.5 14 3.5-7H22" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+</svg>
+
+<!-- ═══════════════════════════════════════════
+     HEADER
+════════════════════════════════════════════ -->
+<div class="app-header">
+  <span class="logo-box" id="headerLogoBox">
+    <svg width="18" height="18" color="#fff"><use href="#icon-logo"/></svg>
+  </span>
+  <div>
+    <div class="header-logo" id="headerTitle">CICS<span>TOOLS</span></div>
+    <div class="header-subtitle" id="headerSub">MAINFRAME TESTING TOOLKIT · COMMAREA / CHANNELS</div>
+  </div>
+  <nav class="app-nav" id="appNav"></nav>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     PAGE: HOME
+════════════════════════════════════════════ -->
+<div class="page active" id="page-home">
+  <div class="home-main">
+    <div class="hero">
+      <div class="hero-eyebrow">MAINFRAME · CICS · COBOL</div>
+      <div class="hero-title">CICS<span>TOOLS</span></div>
+      <div class="hero-sub">MAINFRAME TESTING TOOLKIT</div>
+      <div class="hero-desc">Suite de herramientas para construir y validar mensajes CICS.<br>Genera trazas de entrada y valida respuestas campo a campo,<br>con soporte para OCCURS, parte fija y tipos COBOL.</div>
+    </div>
+    <div class="cards">
+      <div class="tool-card card-gen" onclick="goToTool('gen')">
+        <div class="card-icon-wrap">
+          <svg class="icon icon-lg" style="color:var(--accent);width:26px;height:26px"><use href="#icon-gen"/></svg>
+        </div>
+        <div class="card-tag">HERRAMIENTA 01</div>
+        <div class="card-title">CICS<span>TRACE</span></div>
+        <div class="card-desc">Genera mensajes estructurados de entrada para servicios CICS a partir de un layout copiado desde una tabla (Excel, Docx, ...). Completa el formulario campo a campo y obtén la traza lista para enviar.</div>
+        <div class="card-features">
+          <div class="card-feature"><span class="card-feature-dot"></span>Importa layout desde Excel o .cicsform</div>
+          <div class="card-feature"><span class="card-feature-dot"></span>Soporte OCCURS, parte fija y FILLER</div>
+          <div class="card-feature"><span class="card-feature-dot"></span>Tipos X(n), 9(n) y 9(n)V9(m)</div>
+          <div class="card-feature"><span class="card-feature-dot"></span>Guarda estado como .cicsform reutilizable</div>
+        </div>
+        <button class="card-btn">ABRIR GENERADOR <span class="card-btn-arrow"><svg class="icon"><use href="#icon-arrow"/></svg></span></button>
+      </div>
+      <div class="tool-card card-val" onclick="goToTool('val')">
+        <div class="card-icon-wrap">
+          <svg class="icon icon-lg" style="color:var(--green);width:26px;height:26px"><use href="#icon-logo-val"/></svg>
+        </div>
+        <div class="card-tag">HERRAMIENTA 02</div>
+        <div class="card-title">CICS<span>VALID</span></div>
+        <div class="card-desc">Parsea y valida mensajes de respuesta CICS contra el layout definido. Extrae cada campo por posición, verifica tipos y valores, y genera un reporte descargable.</div>
+        <div class="card-features">
+          <div class="card-feature"><span class="card-feature-dot"></span>Acepta .cicsform del Generador directamente</div>
+          <div class="card-feature"><span class="card-feature-dot"></span>Validación de obligatorios, tipos y valores</div>
+          <div class="card-feature"><span class="card-feature-dot"></span>Visualización coloreada campo a campo</div>
+          <div class="card-feature"><span class="card-feature-dot"></span>Descarga reporte en .TXT y .CSV</div>
+        </div>
+        <button class="card-btn">ABRIR VALIDADOR <span class="card-btn-arrow"><svg class="icon"><use href="#icon-arrow"/></svg></span></button>
+      </div>
+    </div>
+    <div class="flow-hint">
+      <div class="flow-step">
+        <div class="flow-step-num">01</div>
+        <div><div style="color:var(--accent);font-weight:600;font-size:10px;margin-bottom:2px">GENERADOR</div>Define el layout, completa el formulario y genera la traza de envío</div>
+      </div>
+      <div class="flow-sep"></div><div class="flow-arrow">→</div><div class="flow-sep"></div>
+      <div class="flow-step">
+        <div class="flow-step-num">02</div>
+        <div><div style="color:var(--text3);font-size:10px;margin-bottom:2px">SERVICIO CICS</div>El mensaje viaja al mainframe y retorna una respuesta</div>
+      </div>
+      <div class="flow-sep"></div><div class="flow-arrow">→</div><div class="flow-sep"></div>
+      <div class="flow-step">
+        <div class="flow-step-num">03</div>
+        <div><div style="color:var(--green);font-weight:600;font-size:10px;margin-bottom:2px">VALIDADOR</div>Pega la respuesta y valida cada campo contra el mismo layout</div>
+      </div>
+    </div>
+  </div>
+  <footer class="app-footer">
+    <div class="footer-left">
+      <span class="footer-logo-mini">
+        <svg width="11" height="11" color="#fff"><use href="#icon-logo"/></svg>
+      </span>
+      <span>© CICS Tools Suite</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;font-size:10px">
+      <span style="color:var(--accent)">CICSTRACE</span>
+      <span style="color:var(--border2)">·</span>
+      <span style="color:var(--green)">CICSVALID</span>
+    </div>
+  </footer>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     PAGE: CICS TRACE GENERATOR
+════════════════════════════════════════════ -->
+<div class="page" id="page-gen">
+  <div class="tool-content">
+    <div class="tool-tabs" id="genTabs">
+      <div class="tool-tab active" onclick="genSwitchTab('layout')"><svg class="icon icon-sm"><use href="#icon-layout"></use></svg> DEFINIR LAYOUT</div>
+      <div class="tool-tab" onclick="genSwitchTab('form')"><svg class="icon icon-sm"><use href="#icon-form"></use></svg> INGRESAR DATOS</div>
+      <div class="tool-tab" onclick="genSwitchTab('trace')"><svg class="icon icon-sm"><use href="#icon-trace"></use></svg> TRAZA GENERADA</div>
+    </div>
+
+    <!-- LAYOUT -->
+    <div class="panel active" id="gen-panel-layout">
+      <div class="section-title">ACCESO RÁPIDO</div>
+      <div class="quick-card">
+        <div>
+          <div class="quick-card-title"><svg class="icon"><use href="#icon-folder"></use></svg> Cargar formulario guardado (.cicsform)</div>
+          <div class="quick-card-sub">Restaura el layout y datos del formulario directamente</div>
+        </div>
+        <button class="btn btn-primary" onclick="document.getElementById('genLoadFormInput').click()">
+          <svg class="icon"><use href="#icon-upload"></use></svg> CARGAR FORMULARIO
+        </button>
+        <input type="file" id="genLoadFormInput" accept=".cicsform,.json" style="display:none" onchange="genLoadFormFile(event)">
+      </div>
+      <div class="sep"></div>
+      <div class="section-title">IMPORTAR DESDE EXCEL</div>
+      <div class="paste-zone">
+        <label>PEGAR TABLA · Columnas: Campo, Largo, Tipo, Descripción, Oblig, Valores</label>
+        <textarea id="genExcelPaste" placeholder="Pegar aquí el contenido copiado desde una tabla..."></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="genParseExcel()"><svg class="icon"><use href="#icon-trace"></use></svg> INTERPRETAR LAYOUT</button>
+        <button class="btn btn-secondary" onclick="genLoadSampleData()"><svg class="icon"><use href="#icon-ejemplo-clipboard"></use></svg> CARGAR EJEMPLO</button>
+        <button class="btn btn-secondary" onclick="genClearLayout()"><svg class="icon"><use href="#icon-clear"></use></svg> LIMPIAR</button>
+      </div>
+      <div id="genParseAlert" style="display:none"></div>
+      <div class="section-title">ESTRUCTURA INTERPRETADA</div>
+      <div id="genLayoutTableWrap"><div class="alert alert-info"><svg class="icon"><use href="#icon-info"></use></svg> Pega el layout copiado desde una tabla y presiona INTERPRETAR LAYOUT.</div></div>
+      <div class="btn-row" id="genLayoutActions" style="display:none">
+        <button class="btn btn-primary" onclick="genSwitchTab('form'); genBuildForm()"><svg class="icon"><use href="#icon-form"></use></svg> CONTINUAR → INGRESAR DATOS</button>
+      </div>
+    </div>
+
+    <!-- FORM -->
+    <div class="panel" id="gen-panel-form">
+      <div id="genFixedPartSection" style="display:none">
+        <div class="section-title">PARTE FIJA</div>
+        <div class="fixed-block">
+          <div class="fixed-block-header">
+            <div>
+              <div class="fixed-block-title" style="display:flex;align-items:center;gap:6px"><svg class="icon"><use href="#icon-lock"></use></svg> PARTE FIJA · <span id="genFixedFieldName">HEADER</span></div>
+              <div style="font-size:9px;color:var(--text3);margin-top:2px" id="genFixedFieldDesc"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <span id="genFixedStatusPill" class="fixed-status-pill fixed-pill-empty">SIN DEFINIR</span>
+              <span style="font-size:10px;color:var(--text3)" id="genFixedLargoLabel"></span>
+            </div>
+          </div>
+          <div class="fixed-block-body">
+            <div class="mini-tabs">
+              <div class="mini-tab active" onclick="genSwitchMiniTab('extract')"><svg class="icon icon-sm"><use href="#icon-extract"></use></svg> EXTRAER DE TRAZA EJEMPLO</div>
+              <div class="mini-tab" onclick="genSwitchMiniTab('manual')"><svg class="icon icon-sm"><use href="#icon-manual"></use></svg> INGRESAR MANUAL</div>
+            </div>
+            <div class="mini-panel active" id="gen-mini-extract">
+              <div style="font-size:10px;color:var(--text2);margin-bottom:10px">Pega una traza de ejemplo. Se extraerán los primeros <strong id="genFixedLenHint" style="color:var(--accent)">N</strong> caracteres.</div>
+              <div class="paste-zone" style="margin-bottom:10px"><label>TRAZA DE EJEMPLO</label><textarea id="genExampleTracePaste" rows="3" placeholder="Pegar traza ejemplo..."></textarea></div>
+              <div class="btn-row">
+                <button class="btn btn-fixed" onclick="genExtractFixedFromTrace()"><svg class="icon"><use href="#icon-extract"></use></svg> EXTRAER PARTE FIJA</button>
+                <button class="btn btn-secondary" onclick="genClearFixed()"><svg class="icon"><use href="#icon-clear"></use></svg> LIMPIAR</button>
+              </div>
+              <div id="genFixedExtractAlert" style="display:none;margin-top:8px"></div>
+            </div>
+            <div class="mini-panel" id="gen-mini-manual">
+              <div style="font-size:10px;color:var(--text2);margin-bottom:10px">Largo requerido: <strong id="genFixedLenHint2" style="color:var(--accent)">N</strong> caracteres.</div>
+              <div class="input-wrap" style="margin-bottom:10px">
+                <input type="text" class="form-input" id="genFixedManualInput" placeholder="Ingresar parte fija..." oninput="genUpdateFixedManual()">
+                <span class="char-counter" id="genFixedManualCounter">0/0</span>
+              </div>
+              <div class="btn-row">
+                <button class="btn btn-fixed" onclick="genApplyManualFixed()"><svg class="icon"><use href="#icon-success"></use></svg> APLICAR</button>
+                <button class="btn btn-secondary" onclick="genClearFixed()"><svg class="icon"><use href="#icon-clear"></use></svg> LIMPIAR</button>
+              </div>
+              <div id="genFixedManualAlert" style="display:none;margin-top:8px"></div>
+            </div>
+            <div id="genFixedValueWrap" style="display:none;margin-top:14px">
+              <div style="font-size:9px;color:var(--text3);margin-bottom:5px;letter-spacing:1px">VALOR ACTUAL DE LA PARTE FIJA:</div>
+              <div class="fixed-value-display" id="genFixedValueDisplay"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="genFormContent"><div class="alert alert-warn"><svg class="icon"><use href="#icon-warning"></use></svg> Primero define el layout en DEFINIR LAYOUT.</div></div>
+      <div id="genFormActions" style="display:none">
+        <div class="sep"></div>
+        <div id="genErrorsDisplay" style="display:none"></div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="genGenerateTrace()"><svg class="icon"><use href="#icon-trace"></use></svg> GENERAR TRAZA</button>
+          <button class="btn btn-secondary" onclick="genResetForm()"><svg class="icon"><use href="#icon-clear"></use></svg> LIMPIAR FORMULARIO</button>
+          <button class="btn btn-secondary" onclick="genSaveFormFile()"><svg class="icon"><use href="#icon-download"></use></svg> GUARDAR (.cicsform)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRACE -->
+    <div class="panel" id="gen-panel-trace">
+      <div id="genTraceContent"><div class="alert alert-info"><svg class="icon"><use href="#icon-info"></use></svg> Completa el formulario y genera la traza primero.</div></div>
+    </div>
+  </div>
+
+  <footer class="app-footer">
+    <div class="footer-left">
+      <span class="footer-logo-mini" onclick="goToTool('home')" title="Volver al inicio">
+        <svg width="11" height="11" color="#fff"><use href="#icon-logo"/></svg>
+      </span>
+      <span>© CICS Tools Suite</span>
+    </div>
+    <button class="footer-info-btn" onclick="document.getElementById('genInfoModal').classList.add('open')">
+      <svg class="icon icon-sm"><use href="#icon-info"></use></svg> INFORMACIÓN
+    </button>
+  </footer>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     PAGE: CICS RESPONSE VALIDATOR
+════════════════════════════════════════════ -->
+<div class="page" id="page-val">
+  <div class="tool-content">
+    <div class="tool-tabs" id="valTabs">
+      <div class="tool-tab active" onclick="valSwitchTab('layout')"><svg class="icon icon-sm"><use href="#icon-layout"></use></svg> DEFINIR LAYOUT</div>
+      <div class="tool-tab" onclick="valSwitchTab('parse')"><svg class="icon icon-sm"><use href="#icon-search"></use></svg> PARSEAR RESPUESTA</div>
+      <div class="tool-tab" onclick="valSwitchTab('result')"><svg class="icon icon-sm"><use href="#icon-result"></use></svg> RESULTADO</div>
+    </div>
+
+    <!-- LAYOUT -->
+    <div class="panel active" id="val-panel-layout">
+      <div class="section-title">ACCESO RÁPIDO</div>
+      <div class="quick-card">
+        <div>
+          <div class="quick-card-title"><svg class="icon"><use href="#icon-folder"></use></svg> Cargar layout desde formulario guardado (.cicsform)</div>
+          <div class="quick-card-sub">Importa el layout del Generador directamente</div>
+        </div>
+        <button class="btn btn-primary" onclick="document.getElementById('valLoadFormInput').click()">
+          <svg class="icon"><use href="#icon-upload"></use></svg> CARGAR .cicsform
+        </button>
+        <input type="file" id="valLoadFormInput" accept=".cicsform,.json" style="display:none" onchange="valLoadCicsForm(event)">
+      </div>
+      <div class="sep"></div>
+      <div class="section-title">IMPORTAR DESDE EXCEL</div>
+      <div class="paste-zone">
+        <label>PEGAR TABLA DESDE EXCEL · Columnas: Campo, Largo, Tipo, Descripción, Oblig, Valores</label>
+        <textarea id="valExcelPaste" placeholder="Pegar aquí el contenido copiado desde una tabla..."></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="valParseLayout()"><svg class="icon"><use href="#icon-trace"></use></svg> INTERPRETAR LAYOUT</button>
+        <button class="btn btn-secondary" onclick="valLoadSampleLayout()"><svg class="icon"><use href="#icon-ejemplo-clipboard"></use></svg> CARGAR EJEMPLO</button>
+        <button class="btn btn-secondary" onclick="valClearAll()"><svg class="icon"><use href="#icon-clear"></use></svg> LIMPIAR</button>
+      </div>
+      <div id="valLayoutAlert" style="display:none"></div>
+      <div class="section-title">ESTRUCTURA INTERPRETADA</div>
+      <div id="valLayoutTableWrap"><div class="alert alert-info"><svg class="icon"><use href="#icon-info"></use></svg> Pega el layout copiado desde una tabla y presiona INTERPRETAR LAYOUT.</div></div>
+      <div id="valLayoutActions" style="display:none">
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="valSwitchTab('parse')"><svg class="icon"><use href="#icon-search"></use></svg> CONTINUAR → PARSEAR RESPUESTA</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PARSE -->
+    <div class="panel" id="val-panel-parse">
+      <div class="section-title">TRAZA DE RESPUESTA</div>
+      <div class="paste-zone">
+        <label>PEGAR TRAZA DE RESPUESTA (string completo)</label>
+        <textarea id="valTraceInput" rows="4" placeholder="Pegar aquí el string de respuesta del servicio CICS..."></textarea>
+      </div>
+      <div id="valTraceLenInfo" style="display:none;margin-bottom:12px">
+        <div class="alert alert-info" id="valTraceLenAlert"><svg class="icon"><use href="#icon-info"></use></svg><span id="valTraceLenText"></span></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="valRunValidation()"><svg class="icon"><use href="#icon-logo-val"></use></svg> PARSEAR Y VALIDAR</button>
+        <button class="btn btn-secondary" onclick="document.getElementById('valTraceInput').value=''; document.getElementById('valTraceLenInfo').style.display='none'"><svg class="icon"><use href="#icon-clear"></use></svg> LIMPIAR</button>
+      </div>
+      <div id="valParseAlert" style="display:none"></div>
+      <div class="sep"></div>
+      <div class="section-title">OPCIONES DE VALIDACIÓN</div>
+      <div class="val-options-grid">
+        <label><input type="checkbox" id="valOptOblig" checked style="accent-color:var(--accent)"> Validar campos obligatorios vacíos</label>
+        <label><input type="checkbox" id="valOptVals" checked style="accent-color:var(--accent)"> Validar valores contra lista permitida</label>
+        <label><input type="checkbox" id="valOptNumeric" checked style="accent-color:var(--accent)"> Validar formato numérico (campos 9)</label>
+        <label><input type="checkbox" id="valOptLength" checked style="accent-color:var(--accent)"> Alertar si longitud no coincide con layout</label>
+      </div>
+      <div class="sep"></div>
+      <div class="section-title">LAYOUT ACTIVO</div>
+      <div id="valLayoutSummary"><div class="alert alert-warn"><svg class="icon"><use href="#icon-warning"></use></svg> No hay layout cargado. Ve a DEFINIR LAYOUT primero.</div></div>
+    </div>
+
+    <!-- RESULT -->
+    <div class="panel" id="val-panel-result">
+      <div id="valResultContent"><div class="alert alert-info"><svg class="icon"><use href="#icon-info"></use></svg> Ejecuta el parseo en PARSEAR RESPUESTA.</div></div>
+    </div>
+  </div>
+
+  <footer class="app-footer">
+    <div class="footer-left">
+      <span class="footer-logo-mini" onclick="goToTool('home')" title="Volver al inicio">
+        <svg width="11" height="11" color="#fff"><use href="#icon-logo"/></svg>
+      </span>
+      <span>© CICS Tools Suite</span>
+    </div>
+    <button class="footer-info-btn" onclick="document.getElementById('valInfoModal').classList.add('open')">
+      <svg class="icon icon-sm"><use href="#icon-info"></use></svg> INFORMACIÓN
+    </button>
+  </footer>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     INFO MODAL — VALIDATOR
+════════════════════════════════════════════ -->
+<div class="modal-overlay" id="valInfoModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title"><span class="modal-logo-box"><svg width="15" height="15" color="#fff"><use href="#icon-logo-val"/></svg></span> CICS RESPONSE VALIDATOR</div>
+      <button class="modal-close" onclick="document.getElementById('valInfoModal').classList.remove('open')">✕ CERRAR</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section">
+        <div class="modal-section-title"><svg class="icon icon-sm"><use href="#icon-tag"></use></svg> ACERCA DE LA HERRAMIENTA</div>
+        <div class="modal-text"><strong>CICS Response Validator</strong> es una herramienta web para parsear y validar mensajes de respuesta de servicios CICS (COMMAREA / Channels), campo a campo, contra un layout definido. Automatiza la extracción por posición y la validación de tipos, valores obligatorios y listas permitidas. Acepta directamente archivos <strong>.cicsform</strong> exportados desde el Generador de Trazas. Autocontenida: no requiere instalación ni conexión a internet.</div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title"><svg class="icon icon-sm"><use href="#icon-book"></use></svg> GUÍA DE USO</div>
+        <ol class="modal-steps">
+          <li><span class="step-num">1</span><span><strong>Definir Layout</strong> — Carga un <em>.cicsform</em> del Generador directamente, o copia desde una tabla y pega en el área de texto. Presiona <em>Interpretar Layout</em>.</span></li>
+          <li><span class="step-num">2</span><span><strong>Parsear Respuesta</strong> — Pega el string de respuesta completo del servicio CICS. El contador muestra en tiempo real si la longitud coincide con el layout.</span></li>
+          <li><span class="step-num">3</span><span><strong>Opciones</strong> — Configura qué validaciones aplicar: obligatorios, formato numérico, lista de valores, longitud total.</span></li>
+          <li><span class="step-num">4</span><span><strong>Parsear y Validar</strong> — Extrae cada campo por posición y aplica las validaciones seleccionadas.</span></li>
+          <li><span class="step-num">5</span><span><strong>Resultado</strong> — Scoreboard con totales, traza coloreada con hover por campo, lista de problemas y desglose completo campo a campo.</span></li>
+          <li><span class="step-num">6</span><span><strong>Descargar</strong> — Exporta el reporte en <em>.TXT</em> (formato columnas fijo) o <em>.CSV</em> (para Excel, separado por punto y coma).</span></li>
+        </ol>
+        <div class="modal-types">
+          <div class="modal-type-item"><div class="modal-type-badge">X(n)</div><div class="modal-type-desc">Alfanumérico. Se extrae tal como viene. TRIM elimina espacios.</div></div>
+          <div class="modal-type-item"><div class="modal-type-badge">9(n)</div><div class="modal-type-desc">Numérico entero. Valida que contenga solo dígitos.</div></div>
+          <div class="modal-type-item"><div class="modal-type-badge">9(n)V9(m)</div><div class="modal-type-desc">Decimal COBOL. Extrae N+M chars, valida formato numérico.</div></div>
+          <div class="modal-type-item"><div class="modal-type-badge">FILLER</div><div class="modal-type-desc">Se extrae y muestra, pero no se valida.</div></div>
+        </div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title"><svg class="icon icon-sm"><use href="#icon-user"></use></svg> DESARROLLADOR Y CONTACTO</div>
+        <div class="contact-card">
+          <div class="contact-row"><span class="contact-label">HERRAMIENTA</span><span class="contact-val">CICS Response Validator</span></div>
+          <div class="contact-row"><span class="contact-label">VERSIÓN</span><span class="contact-val" style="color:var(--green)">1.0.0</span></div>
+          <div class="contact-row"><span class="contact-label">DESARROLLADOR</span><span class="contact-val">Josué Legeon.</span></div>
+          <div class="contact-row"><span class="contact-label">EMAIL</span><span class="contact-val muted">josue.legeon@example.com</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     INFO MODAL — GENERATOR
+════════════════════════════════════════════ -->
+<div class="modal-overlay" id="genInfoModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title"><span class="modal-logo-box"><svg width="15" height="15" color="#fff"><use href="#icon-logo"/></svg></span> CICS TRACE GENERATOR</div>
+      <button class="modal-close" onclick="document.getElementById('genInfoModal').classList.remove('open')">✕ CERRAR</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section">
+        <div class="modal-section-title"><svg class="icon icon-sm"><use href="#icon-tag"></use></svg> ACERCA DE LA HERRAMIENTA</div>
+        <div class="modal-text"><strong>CICS Trace Generator</strong> es una herramienta web para construir mensajes estructurados compatibles con servicios CICS (COMMAREA / Channels). Soporta grupos OCCURS, parte fija de header, campos decimales y valores controlados. Autocontenida: no requiere instalación ni conexión a internet.</div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title"><svg class="icon icon-sm"><use href="#icon-book"></use></svg> GUÍA DE USO</div>
+        <ol class="modal-steps">
+          <li><span class="step-num">1</span><span><strong>Definir Layout</strong> — Copia desde una tabla y pega en el área de texto. Presiona <em>Interpretar Layout</em>.</span></li>
+          <li><span class="step-num">2</span><span><strong>Parte Fija</strong> — Si hay campo de header fijo, extráelo de una traza ejemplo o ingrésalo manualmente.</span></li>
+          <li><span class="step-num">3</span><span><strong>Ingresar Datos</strong> — Completa el formulario dinámico. Dropdowns para valores controlados.</span></li>
+          <li><span class="step-num">4</span><span><strong>Generar Traza</strong> — Valida obligatorios y construye el mensaje con formato COBOL estricto.</span></li>
+          <li><span class="step-num">5</span><span><strong>Resultado</strong> — Traza RAW + visualización coloreada + desglose por campo. Copiar o descargar .txt.</span></li>
+          <li><span class="step-num">6</span><span><strong>Guardar</strong> — Exporta como .cicsform para restaurar en otra sesión.</span></li>
+        </ol>
+        <div class="modal-types">
+          <div class="modal-type-item"><div class="modal-type-badge">X(n)</div><div class="modal-type-desc">Alfanumérico. Rellena con espacios a la derecha.</div></div>
+          <div class="modal-type-item"><div class="modal-type-badge">9(n)</div><div class="modal-type-desc">Numérico entero. Rellena con ceros a la izquierda.</div></div>
+          <div class="modal-type-item"><div class="modal-type-badge">9(n)V9(m)</div><div class="modal-type-desc">Decimal COBOL. Parte entera y decimal con ceros.</div></div>
+          <div class="modal-type-item"><div class="modal-type-badge">FILLER</div><div class="modal-type-desc">Relleno automático, invisible al usuario.</div></div>
+        </div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title"><svg class="icon icon-sm"><use href="#icon-user"></use></svg> DESARROLLADOR Y CONTACTO</div>
+        <div class="contact-card">
+          <div class="contact-row"><span class="contact-label">HERRAMIENTA</span><span class="contact-val">CICS Trace Generator</span></div>
+          <div class="contact-row"><span class="contact-label">VERSIÓN</span><span class="contact-val" style="color:var(--accent)">2.1.0</span></div>
+          <div class="contact-row"><span class="contact-label">DESARROLLADOR</span><span class="contact-val">Josué Legeon.</span></div>
+          <div class="contact-row"><span class="contact-label">EMAIL</span><span class="contact-val muted">josue.legeon@example.com</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/utils.js"></script>
+<script src="js/generator.js"></script>
+<script src="js/validator.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
